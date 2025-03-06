@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: build-release-${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: ldui
+            asset_name: ldui-linux-amd64
+          - os: macos-latest
+            artifact_name: ldui
+            asset_name: ldui-macos-amd64
+          - os: windows-latest
+            artifact_name: ldui.exe
+            asset_name: ldui-windows-amd64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Build release
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Compress binary (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd target/release
+          tar czvf ${{ matrix.asset_name }}.tar.gz ${{ matrix.artifact_name }}
+          echo "ASSET=${{ matrix.asset_name }}.tar.gz" >> $GITHUB_ENV
+
+      - name: Compress binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd target/release
+          7z a ${{ matrix.asset_name }}.zip ${{ matrix.artifact_name }}
+          echo "ASSET=${{ matrix.asset_name }}.zip" >> $env:GITHUB_ENV
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: target/release/${{ env.ASSET }}
+
+  create_release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            */*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

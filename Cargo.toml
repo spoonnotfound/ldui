@@ -1,0 +1,41 @@
+[package]
+name = "ldui"
+version = "0.1.0"
+edition = "2021"
+description = "一个用于Linux Do论坛的终端UI应用"
+authors = ["spoonnotfound <nospoonforsure@gmail.com>"]
+
+[dependencies]
+crossterm = "0.28.1"
+ratatui = "0.29.0"
+color-eyre = "0.6.3"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5.0"
+toml = "0.8"
+tracing-error = "0.2.1"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+directories = "6.0.0"
+lazy_static = "1.5.0"
+scraper = "0.23.1"
+image = "0.25.1"
+md5 = "0.7.0"
+regex = "1.10.3"
+ratatui-image = "4.2.0"
+
+# API 密钥生成器所需依赖
+base64 = "0.21.7"
+rand = "0.8.5"
+rand_core = "0.6.4"
+rsa = "0.9.6"
+uuid = { version = "1.7.0", features = ["v4"] }
+webbrowser = "0.8.12"
+urlencoding = "2.1.3"
